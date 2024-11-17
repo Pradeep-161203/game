@@ -4,13 +4,12 @@ import random
 import nltk
 from nltk.corpus import wordnet as wn
 import mysql.connector
-
 # Download required nltk data
 nltk.download('wordnet')
 
 
 class Database:
-    def __init__(self):
+    def _init_(self):
         self.conn = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -42,11 +41,12 @@ class Database:
 
 
 class WordGuessingGame:
-    def __init__(self, root, main_root, difficulty, db):
+    def _init_(self, root, main_root, difficulty, db, username):
         self.root = root
         self.main_root = main_root  # Reference to main window
         self.difficulty = difficulty  # Set difficulty level
         self.db = db
+        self.username = username
         self.word_clue_dict = self.generate_word_list_by_difficulty()
 
         self.root.title("Word Guessing Game")
@@ -78,8 +78,10 @@ class WordGuessingGame:
         # Main Layout
         self.setup_layout()
 
+
         # Display word to guess (with underscores)
         self.update_display()
+        self.total_points_label.config(text=f"Total Points: {self.total_points}")
 
     def generate_word_list_by_difficulty(self):
         """Generates word lists categorized by difficulty."""
@@ -160,6 +162,7 @@ class WordGuessingGame:
         # Reset button
         self.reset_button = self.create_button("Reset", self.reset_game, "#ff4500")
         self.reset_button.pack(pady=5)
+
 
     def create_button(self, text, command, bg_color="#4682b4"):
         button = tk.Button(self.root, text=text, command=command, bg=bg_color, fg="#ffffff", font=("Arial", 14))
@@ -253,6 +256,7 @@ class WordGuessingGame:
             messagebox.showinfo("Game Over", f"You lost! The word was '{self.word_to_guess}'.")
             self.back_to_home()  # Return to home page after a loss
 
+
     def update_level(self):
         """Update the level label to reflect the current level."""
         self.level_label.config(text=f"Level: {self.level}")
@@ -286,7 +290,7 @@ class WordGuessingGame:
 
 
 class MainMenu:
-    def __init__(self, root):
+    def _init_(self, root):
         self.root = root
         self.root.title("Main Menu")
         self.root.geometry("600x400")
@@ -361,35 +365,37 @@ class MainMenu:
 
         if self.db.validate_user(username, password):
             self.login_window.destroy()  # Close login window
-            self.show_difficulty_selection()
+            self.show_difficulty_selection(username)
         else:
             messagebox.showerror("Error", "Invalid username or password.")
 
-    def show_difficulty_selection(self):
+    def show_difficulty_selection(self, username):
         self.difficulty_window = tk.Toplevel(self.root)
         self.difficulty_window.title("Select Difficulty")
         self.difficulty_window.geometry("400x300")
         self.difficulty_window.configure(bg="#f0f8ff")
 
-        tk.Label(self.difficulty_window, text="Select Difficulty Level", font=("Arial", 16), bg="#f0f8ff").pack(pady=10)
+        tk.Label(self.difficulty_window, text=f"Welcome {username}! Select Difficulty Level", font=("Arial", 16), bg="#f0f8ff").pack(pady=10)
 
-        easy_button = tk.Button(self.difficulty_window, text="Easy", command=lambda: self.start_game("Easy"), bg="#4682b4", fg="#ffffff")
+
+        easy_button = tk.Button(self.difficulty_window, text="Easy", command=lambda: self.start_game(username, "Easy"), bg="#4682b4", fg="#ffffff")
         easy_button.pack(pady=5)
 
-        medium_button = tk.Button(self.difficulty_window, text="Medium", command=lambda: self.start_game("Medium"), bg="#4682b4", fg="#ffffff")
+        medium_button = tk.Button(self.difficulty_window, text="Medium", command=lambda: self.start_game(username, "Medium"), bg="#4682b4", fg="#ffffff")
         medium_button.pack(pady=5)
 
-        hard_button = tk.Button(self.difficulty_window, text="Hard", command=lambda: self.start_game("Hard"), bg="#4682b4", fg="#ffffff")
+        hard_button = tk.Button(self.difficulty_window, text="Hard", command=lambda: self.start_game(username, "Hard"), bg="#4682b4", fg="#ffffff")
         hard_button.pack(pady=5)
 
-    def start_game(self, difficulty):
+    def start_game(self, username, difficulty):
         self.difficulty_window.destroy()  # Close difficulty selection
         self.root.withdraw()  # Hide main menu
         game_window = tk.Toplevel(self.root)
-        WordGuessingGame(game_window, self.root, difficulty, self.db)  # Start the game
+        WordGuessingGame(game_window, self.root, difficulty, self.db, username)  # Pass username to the game
 
 
-if __name__ == "__main__":
+
+if __name__ == "_main_":
     root = tk.Tk()
     main_menu = MainMenu(root)
     root.mainloop()
